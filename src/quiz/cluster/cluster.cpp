@@ -18,7 +18,7 @@ pcl::visualization::PCLVisualizer::Ptr initScene(Box window, int zoom)
   	viewer->setCameraPosition(0, 0, zoom, 0, 1, 0);
   	viewer->addCoordinateSystem (1.0);
 
-  	viewer->addCube(window.x_min, window.x_max, window.y_min, window.y_max, 0, 0, 1, 1, 1, "window");
+  	viewer->addCube(window.x_min, window.x_max, window.y_min, window.y_max, 0, 0, 0.2, 0.2, 0.2, "window");
   	return viewer;
 }
 
@@ -75,12 +75,44 @@ void render2DTree(Node* node, pcl::visualization::PCLVisualizer::Ptr& viewer, Bo
 
 }
 
+void proximity(const std::vector<std::vector<float>>& points, int& idx, std::vector<bool>& processed, std::vector<int>& cluster, KdTree* tree, float distanceTol){
+
+	processed[idx] = true;
+	cluster.push_back(idx);
+	std::vector<int> nearby = tree->search(points[idx],distanceTol);
+	
+	for(int index : nearby){
+		
+		if(!processed[index]){
+			proximity(points, index, processed, cluster, tree, distanceTol);
+		}
+	}
+	
+}
+
 std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<float>>& points, KdTree* tree, float distanceTol)
 {
 
 	// TODO: Fill out this function to return list of indices for each cluster
 
 	std::vector<std::vector<int>> clusters;
+
+	std::vector<bool> processedPts(points.size(), false);
+
+	int idx = 0;
+
+	while(idx < points.size()){
+
+		if(processedPts[idx] == true){
+			idx++;
+			continue;
+		}
+
+		std::vector<int> cluster;
+		proximity(points, idx, processedPts, cluster, tree, distanceTol);
+		clusters.push_back(cluster);
+	}
+
  
 	return clusters;
 
@@ -101,6 +133,7 @@ int main ()
 
 	// Create data
 	std::vector<std::vector<float>> points = { {-6.2,7}, {-6.3,8.4}, {-5.2,7.1}, {-5.7,6.3}, {7.2,6.1}, {8.0,5.3}, {7.2,7.1}, {0.2,-7.1}, {1.7,-6.9}, {-1.2,-7.2}, {2.2,-8.9} };
+	// std::vector<std::vector<float>> points = { {-6.2,7}};
 	//std::vector<std::vector<float>> points = { {-6.2,7}, {-6.3,8.4}, {-5.2,7.1}, {-5.7,6.3} };
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = CreateData(points);
 
@@ -126,15 +159,21 @@ int main ()
   	auto endTime = std::chrono::steady_clock::now();
   	auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
   	std::cout << "clustering found " << clusters.size() << " and took " << elapsedTime.count() << " milliseconds" << std::endl;
-
-  	// Render clusters
+  	
+	// Render clusters
   	int clusterId = 0;
 	std::vector<Color> colors = {Color(1,0,0), Color(0,1,0), Color(0,0,1)};
-  	for(std::vector<int> cluster : clusters)
-  	{
+  	for(auto cluster : clusters)
+  	{	
+		std::cout << "Entered first loop" << std::endl;
+
   		pcl::PointCloud<pcl::PointXYZ>::Ptr clusterCloud(new pcl::PointCloud<pcl::PointXYZ>());
-  		for(int indice: cluster)
+  		
+		for(auto indice: cluster){
+			std::cout << "Entered 2nd loop" << std::endl;
   			clusterCloud->points.push_back(pcl::PointXYZ(points[indice][0],points[indice][1],0));
+		}
+
   		renderPointCloud(viewer, clusterCloud,"cluster"+std::to_string(clusterId),colors[clusterId%3]);
   		++clusterId;
   	}
