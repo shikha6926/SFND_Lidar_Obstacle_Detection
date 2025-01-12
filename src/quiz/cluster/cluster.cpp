@@ -93,8 +93,6 @@ void proximity(const std::vector<std::vector<float>>& points, int& idx, std::vec
 std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<float>>& points, KdTree* tree, float distanceTol)
 {
 
-	// TODO: Fill out this function to return list of indices for each cluster
-
 	std::vector<std::vector<int>> clusters;
 
 	std::vector<bool> processedPts(points.size(), false);
@@ -177,6 +175,7 @@ int main ()
   		renderPointCloud(viewer, clusterCloud,"cluster"+std::to_string(clusterId),colors[clusterId%3]);
   		++clusterId;
   	}
+	
   	if(clusters.size()==0)
   		renderPointCloud(viewer,cloud,"data");
 	

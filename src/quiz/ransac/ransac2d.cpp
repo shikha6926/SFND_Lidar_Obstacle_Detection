@@ -124,16 +124,6 @@ std::unordered_set<int> Ransac3D(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int 
 	std::unordered_set<int> inliersResult;
 	srand(time(NULL));
 	auto startTime = std::chrono::steady_clock::now();
-	// TODO: Fill in this function
-
-	// For max iterations 
-
-	// Randomly sample subset and fit line
-
-	// Measure distance between every point and fitted line
-	// If distance is smaller than threshold count it as inlier
-
-	// Return indicies of inliers from fitted line with most inliers
 	
 	while(maxIterations !=0){
 		maxIterations--;
@@ -166,8 +156,8 @@ std::unordered_set<int> Ransac3D(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int 
 		float C = v1.x * v2.y - v1.y * v2.x;
 		float D = - (A*x1  +  B*y1 + C*z1);
 
-
-
+		// Measure distance between every point and fitted line
+		// If distance is smaller than threshold count it as inlier
 		for(int idx = 0; idx < cloud->points.size(); idx++){
 			
 			if(inliers.count(idx) > 0)
@@ -191,7 +181,7 @@ std::unordered_set<int> Ransac3D(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int 
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
     std::cout << "RANSAC algo:  " << elapsedTime.count() << " milliseconds" << std::endl;
 
-
+	// Return indicies of inliers from fitted line with most inliers
 	return inliersResult;
 	
 }
